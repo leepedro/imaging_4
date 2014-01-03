@@ -72,7 +72,7 @@ namespace Imaging
 	class RectTypeB
 	{
 		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
-		"origin must be integral data type and size must be unsigned integral type.");
+		"Only arithmetic data types are supported for this class template.");
 
 	public:
 		////////////////////////////////////////////////////////////////////////////////////

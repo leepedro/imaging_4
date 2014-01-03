@@ -69,7 +69,6 @@ void TestPoint2D_imp(void)
 	Imaging::Point2D<int> ptInt;
 	Imaging::Cast(pt1.cbegin(), pt1.cend(), ptInt.begin());
 
-	std::array<int, 2> arrayI3 = Imaging::Cast<int>(pt1);
 	//Imaging::Point2D<int> ptInt = Imaging::Cast<int>(pt1);
 	//Imaging::Point2D<int> ptInt = { 1, 2 };
 	//Imaging::Point2D<T> pt11 = pt1 + ptInt;	// {2, 4}
@@ -101,6 +100,10 @@ void TestPoint2D_imp(void)
 
 void TestPoint2D(void)
 {
+	std::array<int, 2> arrayI3 = Imaging::Cast<int>(Imaging::Point2D<int>(1, 2));
+	std::array<int, 2> arrayI4 = Imaging::Cast<int>(Imaging::Point2D<unsigned int>(1, 2));
+	//std::array<int, 2> arrayI3 = Imaging::Point2D<int>(1, 2);
+
 	TestPoint2D_imp<int>();
 	TestPoint2D_imp<unsigned int>();
 	TestPoint2D_imp<long long>();
