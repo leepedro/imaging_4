@@ -77,12 +77,12 @@ namespace Imaging
 	public:
 		////////////////////////////////////////////////////////////////////////////////////
 		// Default constructors.
-		//RectTypeB(void) = default;
+		RectTypeB(void) = default;
 		//RectTypeB<T, U> &operator=(const RectTypeB<T, U> &src) = default;
 
 		////////////////////////////////////////////////////////////////////////////////////
 		// Custom constructors.
-		//RectTypeB(const Point2D<T> &orgn, const Size2D<U> &sz);
+		RectTypeB(const Point2D<T> &orgn, const Size2D<U> &sz);
 
 		////////////////////////////////////////////////////////////////////////////////////
 		// Operators.
@@ -94,8 +94,6 @@ namespace Imaging
 		Point2D<T> origin;
 		Size2D<U> size;
 	};
-
-	typedef RectTypeB<std::size_t, std::size_t> ROI;
 
 	template <typename T, typename U>
 	class RectTypeC
@@ -157,12 +155,13 @@ namespace Imaging
 	////////////////////////////////////////////////////////////////////////////////////
 	// RectTypeB<T, U>
 
-	//template <typename T, typename U>
-	//RectTypeB<T, U>::RectTypeB(const Point2D<T> &orgn, const Size2D<U> &sz) : RectTypeB<T, U>()
-	//{
-	//	this->origin = orgn;
-	//	this->size = sz;
-	//}
+	template <typename T, typename U>
+	RectTypeB<T, U>::RectTypeB(const Point2D<T> &orgn, const Size2D<U> &sz) :
+		RectTypeB<T, U>()
+	{
+		this->origin = orgn;
+		this->size = sz;
+	}
 
 	template <typename T, typename U>
 	bool RectTypeB<T, U>::operator==(const RectTypeB<T, U> &rhs) const

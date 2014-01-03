@@ -132,6 +132,13 @@ namespace Imaging
 		for (auto H = 0; H != nLines; ++H)
 			std::copy_n(itSrc + H * stepSrc, nElemPerLine, itDst + H * stepDst);
 	}
+
+	template <typename InputIterator, typename OutputIterator>
+	void Cast(InputIterator itSrc, InputIterator itSrcLast, OutputIterator itDst)
+	{
+		for (; itSrc != itSrcLast; ++itSrc, ++itDst)
+			*itDst = Cast<typename OutputIterator::value_type>(*itSrc);
+	}
 }
 
 #endif

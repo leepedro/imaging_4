@@ -183,8 +183,11 @@ namespace Imaging
 		return dst;
 	}
 
+	// TODO: Try to use Cast() in algorithm.h
 	template <typename T, typename U, std::size_t N>
-	std::array<T, N> Cast(const std::array<U, N> &src)
+	//std::enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
+	//	std::array<T, N>> Cast(const std::array<U, N> &src)
+	std::array<T, N > Cast(const std::array<U, N> &src)
 	{
 		std::array<T, N> dst;
 		auto itDst = dst.begin(), itDstEnd = dst.end();
