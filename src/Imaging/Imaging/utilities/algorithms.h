@@ -134,11 +134,20 @@ namespace Imaging
 	}
 
 	template <typename InputIterator, typename OutputIterator>
-	void Cast(InputIterator itSrc, InputIterator itSrcLast, OutputIterator itDst)
+	void CastRange(InputIterator itSrc, InputIterator itSrcLast, OutputIterator itDst)
 	{
 		for (; itSrc != itSrcLast; ++itSrc, ++itDst)
-			*itDst = Cast<typename OutputIterator::value_type>(*itSrc);
+			*itDst = SafeCast<typename OutputIterator::value_type>(*itSrc);
 	}
+
+	template <typename InputIterator, typename OutputIterator>
+	std::enable_if_t<std::is_floating_point<typename InputIterator::value_type>::value,
+		void> RoundRange(InputIterator itSrc, InputIterator itSrcLast, OutputIterator itDst)
+	{
+		for (; itSrc != itSrcLast; ++itSrc, ++itDst)
+			*itDst = SafeCast<typename OutputIterator::value_type>(std::round(*itSrc));
+	}
+
 }
 
 #endif

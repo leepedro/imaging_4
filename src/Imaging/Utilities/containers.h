@@ -177,32 +177,24 @@ namespace Imaging
 		const std::array<U, N> &src)
 	{
 		std::array<T, N> dst;
-		auto itDst = dst.begin(), itDstEnd = dst.end();
-		for (auto itSrc = src.begin(); itDst != itDstEnd; ++itDst, ++itSrc)
-			*itDst = Cast<T>(std::round(*itSrc));
+		RoundRange(src.cbegin(), src.cend(), dst.begin());
 		return dst;
 	}
 
-	// TODO: Try to use Cast() in algorithm.h
 	template <typename T, typename U, std::size_t N>
 	std::enable_if_t<!std::is_same<T, U>::value, std::array<T, N>> Cast(
 		const std::array<U, N> &src)
-	//std::array<T, N> Cast(const std::array<U, N> &src)
 	{
 		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
 			"Only arithmetic data types are supported for this class template.");
 		std::array<T, N> dst;
-		//Cast(src.cbegin(), src.cend(), dst.begin());
-		auto itDst = dst.begin(), itDstEnd = dst.end();
-		for (auto itSrc = src.begin(); itDst != itDstEnd; ++itDst, ++itSrc)
-			*itDst = Cast<T>(*itSrc);
+		CastRange(src.cbegin(), src.cend(), dst.begin());
 		return dst;
 	}
 
 	template <typename T, typename U, std::size_t N>
 	std::enable_if_t<std::is_same<T, U>::value, std::array<T, N>> Cast(
 		const std::array<U, N> &src)
-		//std::array<T, N> Cast(const std::array<U, N> &src)
 	{
 		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
 			"Only arithmetic data types are supported for this class template.");

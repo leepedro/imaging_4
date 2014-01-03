@@ -121,7 +121,7 @@ void TestSafeOperations(void)
 	try
 	{	// positive overflow
 		int a = 256;
-		unsigned char b = Cast<unsigned char>(a);
+		unsigned char b = SafeCast<unsigned char>(a);
 	}
 	catch (const std::overflow_error &e)
 	{

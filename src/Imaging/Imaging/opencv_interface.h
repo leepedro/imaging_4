@@ -15,21 +15,21 @@ namespace Imaging
 		switch (ty)
 		{
 		case DataType::CHAR:
-			return CV_MAKETYPE(CV_8S, Cast<int>(d));
+			return CV_MAKETYPE(CV_8S, SafeCast<int>(d));
 		case DataType::SCHAR:
-			return CV_MAKETYPE(CV_8S, Cast<int>(d));
+			return CV_MAKETYPE(CV_8S, SafeCast<int>(d));
 		case DataType::UCHAR:
-			return CV_MAKETYPE(CV_8U, Cast<int>(d));
+			return CV_MAKETYPE(CV_8U, SafeCast<int>(d));
 		case DataType::SHORT:
-			return CV_MAKETYPE(CV_16S, Cast<int>(d));
+			return CV_MAKETYPE(CV_16S, SafeCast<int>(d));
 		case DataType::USHORT:
-			return CV_MAKETYPE(CV_16U, Cast<int>(d));
+			return CV_MAKETYPE(CV_16U, SafeCast<int>(d));
 		case DataType::INT:
-			return CV_MAKETYPE(CV_32S, Cast<int>(d));
+			return CV_MAKETYPE(CV_32S, SafeCast<int>(d));
 		case DataType::FLOAT:
-			return CV_MAKETYPE(CV_32F, Cast<int>(d));
+			return CV_MAKETYPE(CV_32F, SafeCast<int>(d));
 		case DataType::DOUBLE:
-			return CV_MAKETYPE(CV_64F, Cast<int>(d));
+			return CV_MAKETYPE(CV_64F, SafeCast<int>(d));
 		default:
 			std::ostringstream errMsg;
 			errMsg << typeid(DataType).name() << "::" <<

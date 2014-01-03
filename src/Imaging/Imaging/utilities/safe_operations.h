@@ -18,7 +18,7 @@ Employs the downloadable SafeInt.hpp from http://safeint.codeplex.com/ for other
 #if defined(_MSC_VER)
 // Use the built-in safeint.h for Visual C++.
 #include <safeint.h>
-using namespace msl::utilities;
+//using namespace msl::utilities;
 #else
 // Use the downloadable SafeInt.hpp from http://safeint.codeplex.com/ for other compilers.
 #include "SafeInt.hpp"
@@ -130,7 +130,7 @@ namespace Imaging
 	template <typename T, typename U>
 	void Add_imp(T t, U u, T &result, std::true_type, std::true_type)
 	{
-		if (!SafeAdd(t, u, result))
+		if (!msl::utilities::SafeAdd(t, u, result))
 		{
 			std::ostringstream errMsg;
 			errMsg << "The result value exceeds the limit of " << typeid(result).name();
@@ -230,7 +230,7 @@ namespace Imaging
 	template <typename T, typename U>
 	void Multiply_imp(T t, U u, T &result, std::true_type, std::true_type)
 	{
-		if (!SafeMultiply(t, u, result))
+		if (!msl::utilities::SafeMultiply(t, u, result))
 		{
 			std::ostringstream errMsg;
 			errMsg << "The result value exceeds the limit of " << typeid(result).name();
@@ -331,7 +331,7 @@ namespace Imaging
 	template <typename T, typename U>
 	void Subtract_imp(T t, U u, T &result, std::true_type, std::true_type)
 	{
-		if (!SafeSubtract(t, u, result))
+		if (!msl::utilities::SafeSubtract(t, u, result))
 		{
 			std::ostringstream errMsg;
 			errMsg << "The result value exceeds the limit of " << typeid(result).name();
@@ -439,20 +439,20 @@ namespace Imaging
 	}
 
 	template <typename T, typename U>
-	T Cast(U src)
+	T SafeCast(U src)
 	{
 		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
 			"Only arithmetic data types are supported for this function template.");
 		T dst;
-		Cast_imp(src, dst, std::is_integral<U>(), std::is_integral<T>());
+		SafeCast_imp(src, dst, std::is_integral<U>(), std::is_integral<T>());
 		return dst;
 	}
 
 	// integral to integral; checking overflow.
 	template <typename T, typename U>
-	void Cast_imp(U src, T &dst, std::true_type, std::true_type)
+	void SafeCast_imp(U src, T &dst, std::true_type, std::true_type)
 	{
-		if (!SafeCast(src, dst))
+		if (!msl::utilities::SafeCast(src, dst))
 		{
 			std::ostringstream errMsg;
 			errMsg << "The source value exceeds the limit of " << typeid(dst).name();
@@ -462,7 +462,7 @@ namespace Imaging
 
 	// floating point to integral; checking overflow, suppressing data loss warning.
 	template <typename T, typename U>
-	void Cast_imp(U src, T &dst, std::false_type, std::true_type)
+	void SafeCast_imp(U src, T &dst, std::false_type, std::true_type)
 	{
 		if (static_cast<U>(std::numeric_limits<T>::max()) < src)
 			throw std::overflow_error("Source value is too high.");
@@ -474,14 +474,14 @@ namespace Imaging
 
 	// integral to floating type; suppressing data loss warning if dst is float.
 	template <typename T, typename U>
-	void Cast_imp(U src, T &dst, std::true_type, std::false_type)
+	void SafeCast_imp(U src, T &dst, std::true_type, std::false_type)
 	{
 		dst = static_cast<T>(src);
 	}
 
 	// floating to floating; suppressing data loss warning if src is double and dst is float.
 	template <typename T, typename U>
-	void Cast_imp(U src, T &dst, std::false_type, std::false_type)
+	void SafeCast_imp(U src, T &dst, std::false_type, std::false_type)
 	{
 		dst = static_cast<T>(src);
 	}
