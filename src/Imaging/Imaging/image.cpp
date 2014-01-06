@@ -5,54 +5,62 @@
 
 namespace Imaging
 {
+	////////////////////////////////////////////////////////////////////////////////////
+	// DataType and functions using DataType.
+
 	std::size_t GetNumBytes(DataType ty)
 	{
 		switch (ty)
 		{
 		case DataType::UNDEFINED:
-			return 0;
+			throw std::runtime_error("Data type is undefined.");
 		case DataType::CHAR:
+			return sizeof(char);
 		case DataType::SCHAR:
+			return sizeof(signed char);
 		case DataType::UCHAR:
-			return 1;
+			return sizeof(unsigned char);
 		case DataType::SHORT:
+			return sizeof(short);
 		case DataType::USHORT:
-			return 2;
+			return sizeof(unsigned short);
 		case DataType::INT:
+			return sizeof(int);
 		case DataType::UINT:
+			return sizeof(unsigned int);
 		case DataType::FLOAT:
-			return 4;
+			return sizeof(float);
 		case DataType::LONGLONG:
+			return sizeof(long long);
 		case DataType::ULONGLONG:
+			return sizeof(unsigned long long);
 		case DataType::DOUBLE:
-			return 8;
+			return sizeof(double);
 		default:
-			throw std::logic_error("Unknown DataType.");
+			throw std::logic_error("Unknown data type.");
 		}
 	}
+
+	// DataType and functions using DataType.
+	////////////////////////////////////////////////////////////////////////////////////
+
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// ImageFrame
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Constructors.
-
-	ImageFrame::ImageFrame(const ImageFrame &src) : ImageFrame()
-	{
-		*this = src;
-	}
-
-	ImageFrame::ImageFrame(ImageFrame &&src) : ImageFrame()
-	{
-		*this = std::move(src);
-	}
-
+	
 	ImageFrame &ImageFrame::operator=(const ImageFrame &src)
 	{
-		ImageFrame::EvalSize(src.dataType, src.data.size(), src.size.width, src.size.height, src.depth);
+		// Check source dimension.
+		ImageFrame::EvalSize(src.dataType, src.data.size(), src.size.width, src.size.height,
+			src.depth);
 
+		// Copy image data.
 		this->data_ = src.data;
 
+		// Update dimension.
 		this->bytesPerLine_ = src.bytesPerLine;
 		this->dataType_ = src.dataType;
 		this->depth_ = src.depth;
@@ -68,15 +76,20 @@ namespace Imaging
 	If no exception guarantee is required later, remove EvalSize().	*/
 	ImageFrame &ImageFrame::operator=(ImageFrame &&src)
 	{
-		ImageFrame::EvalSize(src.dataType, src.data.size(), src.size.width, src.size.height, src.depth);
+		// Check source dimension.
+		ImageFrame::EvalSize(src.dataType, src.data.size(), src.size.width, src.size.height,
+			src.depth);
 
+		// Move image data.
 		this->data_ = std::move(src.data_);
 
+		// Update dimension.
 		this->bytesPerLine_ = src.bytesPerLine;
 		this->dataType_ = src.dataType;
 		this->depth_ = src.depth;
 		this->size_ = src.size;
 
+		// Update dimension at the source.
 		src.bytesPerLine_ = 0;
 		src.dataType_ = DataType::UNDEFINED;
 		src.depth_ = 0;
@@ -85,105 +98,62 @@ namespace Imaging
 		return *this;
 	}
 
-	ImageFrame::ImageFrame(DataType ty, const Size2D<SizeType> &sz, SizeType d) :
-		ImageFrame()
-	{
-		this->Reset(ty, sz, d);
-	}
-
-	ImageFrame::ImageFrame(DataType ty, const std::vector<ByteType> &srcData,
-		const Size2D<SizeType> &sz, SizeType d) : ImageFrame()
-	{
-		this->CopyFrom(ty, srcData, sz, d);
-	}
-
-	ImageFrame::ImageFrame(DataType ty, std::vector<ByteType> &&srcData,
-		const Size2D<SizeType> &sz, SizeType d) : ImageFrame()
-	{
-		this->MoveFrom(ty, std::move(srcData), sz, d);
-	}
-
 	// Constructors.
 	////////////////////////////////////////////////////////////////////////////////////
 
-	////////////////////////////////////////////////////////////////////////////////////
-	// Accessors.
-
-	ImageFrame::Iterator ImageFrame::Begin(const Point2D<SizeType> &pt)
-	{
-		if (pt == Point2D<SizeType>{ 0, 0 })
-			return this->data_.begin();
-		else
-		{
-			this->EvalPosition(pt);
-			return this->data_.begin() + this->GetOffset(pt);
-		}
-	}
-
-	ImageFrame::ConstIterator ImageFrame::Cbegin(const Point2D<SizeType> &pt) const
-	{
-		if (pt == Point2D<SizeType>{ 0, 0 })
-			return this->data.cbegin();
-		else
-		{
-			this->EvalPosition(pt);
-			return this->data.cbegin() + this->GetOffset(pt);
-		}
-	}
-
-	ImageFrame::SizeType ImageFrame::GetOffset(const Point2D<SizeType> &pt) const
-	{
-		auto bytes_line = ImageFrame::GetBytesPerLine(this->dataType, this->size.width,
-			this->depth);
-		return bytes_line * pt.y + GetNumBytes(this->dataType) * this->depth * pt.x;
-	}
-
-	// Accessors.
-	////////////////////////////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////////////////////////////
 	// Methods.
 
 	void ImageFrame::Clear()
 	{
+		// Clear memory.
 		this->data_.clear();
 
+		// Update dimension.
 		this->bytesPerLine_ = 0;
 		this->dataType_ = DataType::UNDEFINED;
 		this->depth_ = 0;
 		this->size_ = { 0, 0 };
 	}
 
-	void ImageFrame::CopyFrom(DataType ty, const std::vector<ByteType> &srcData,
+	void ImageFrame::CopyFrom(const std::vector<ByteType> &srcData, DataType ty,
 		const Size2D<SizeType> &sz, SizeType d)
 	{
+		// Check source dimension.
 		ImageFrame::EvalSize(ty, srcData.size(), sz.width, sz.height, d);
 
+		// Copy image data.
 		this->data_ = srcData;
 
+		// Update dimension.
 		this->bytesPerLine_ = ImageFrame::GetBytesPerLine(ty, sz.width, d);
 		this->dataType_ = ty;
 		this->depth_ = d;
 		this->size_ = sz;
 	}
 
-	void ImageFrame::CopyFrom(DataType ty, const ByteType *src, const Size2D<SizeType> &sz,
+	void ImageFrame::CopyFrom(const ByteType *src, DataType ty, const Size2D<SizeType> &sz,
 		SizeType d, SizeType stepBytes)
 	{
+		// Compute memory requirement.
 		auto bytes_line = ImageFrame::GetBytesPerLine(ty, sz.width, d);
 		auto bytes_total = sz.height * bytes_line;
 
-		if (bytes_line == stepBytes)
+		// Copy image data considering padding bytes.
+		if (bytes_line == stepBytes)	// identical padding bytes.
 			this->data_.assign(src, src + bytes_total);
 		else
-		{
+		{	// different padding bytes.
 			if (this->data.size() != bytes_total)
 				this->data_.resize(bytes_total);
 			auto itDst = this->data_.begin();
-			for (auto H = 0; H != sz.height; ++H, src += stepBytes, itDst += bytes_line)
-				std::copy_n(src, sz.width * d * GetNumBytes(ty), itDst);
+			Utilities::CopyLines(src, stepBytes, itDst, bytes_line, stepBytes, sz.height);
+			//for (auto H = 0; H != sz.height; ++H, src += stepBytes, itDst += bytes_line)
+			//	std::copy_n(src, sz.width * d * GetNumBytes(ty), itDst);
 		}
 
+		// Update dimension.
 		this->bytesPerLine_ = bytes_line;
 		this->dataType_ = ty;
 		this->depth_ = d;
@@ -192,7 +162,7 @@ namespace Imaging
 
 	ImageFrame ImageFrame::CopyTo(const ROI &roiSrc) const
 	{
-		// Check ROI.
+		// Check source ROI.
 		this->EvalRoi(roiSrc);
 
 		ImageFrame imgDst;
@@ -214,21 +184,11 @@ namespace Imaging
 			auto itDst = imgDst.Begin();
 			auto bytes_line_roi = GetNumBytes(this->dataType) * roiSrc.size.width *
 				this->depth;
-			Utilities::CopyLines(itSrc, this->bytesPerLine, itDst, imgDst.bytesPerLine, bytes_line_roi,
-				roiSrc.size.height);
+			Utilities::CopyLines(itSrc, this->bytesPerLine, itDst, imgDst.bytesPerLine,
+				bytes_line_roi,	roiSrc.size.height);
 		}
 
 		return imgDst;
-	}
-
-	void ImageFrame::EvalPosition(const Point2D<SizeType> &pt) const
-	{
-		this->EvalRoi(pt, { 1, 1 });
-	}
-
-	void ImageFrame::EvalRoi(const ROI &roi) const
-	{
-		this->EvalRoi(roi.origin, roi.size);
 	}
 
 	void ImageFrame::EvalRoi(const Point2D<SizeType> &orgn, const Size2D<SizeType> &sz) const
@@ -263,18 +223,16 @@ namespace Imaging
 		}
 	}
 
-	ImageFrame::SizeType ImageFrame::GetBytesPerLine(DataType ty, SizeType w, SizeType d)
-	{
-		return w * d * GetNumBytes(ty) + 0;
-	}
-
-	void ImageFrame::MoveFrom(DataType ty, std::vector<ByteType> &&srcData,
+	void ImageFrame::MoveFrom(std::vector<ByteType> &&srcData, DataType ty,
 		const Size2D<SizeType> &sz, SizeType d)
 	{
+		// Check source dimension.
 		ImageFrame::EvalSize(ty, srcData.size(), sz.width, sz.height, d);
 
+		// Move image data.
 		this->data_ = std::move(srcData);
 
+		// Update dimension.
 		this->bytesPerLine_ = ImageFrame::GetBytesPerLine(ty, sz.width, d);
 		this->dataType_ = ty;
 		this->depth_ = d;

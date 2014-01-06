@@ -10,7 +10,8 @@ Employs the built-in safeint.h for Visual C++.
 Employs the SafeInt.hpp from http://safeint.codeplex.com/ for other compilers.
 
 All function templates from SafeInt library throws no exception.
-The function templates in this file provide similar but more convenient interface with exception.
+The function templates in this file provide similar but more convenient interface with
+exception.
 */
 
 #include <stdexcept>
@@ -57,7 +58,7 @@ namespace Utilities
 	/* How to design function templates for operations with two data types {T, U}.
 
 	In order to avoid template parameter ambiguity situation, define three scenarios for
-	binary operations.
+	binary (i.e. two input arguments) operations.
 	1. Same data types only
 	template <typename T> void Func(T, T, T &)
 	2. Different data types only and the return value is the same as the first one.
@@ -383,6 +384,7 @@ namespace Utilities
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Increment
 
+	// ++T
 	template <typename T>
 	std::enable_if_t<std::is_arithmetic<T>::value, void> Increment(T &value)
 	{
@@ -412,6 +414,8 @@ namespace Utilities
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Decrement
+
+	// --T
 	template <typename T>
 	std::enable_if_t<std::is_arithmetic<T>::value, void> Decrement(T &value)
 	{
@@ -442,6 +446,7 @@ namespace Utilities
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Cast
 
+	// Cast(T, U); T -> U
 	template <typename T, typename U>
 	std::enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value, void> Cast(
 		T src, U &dst)
@@ -449,7 +454,9 @@ namespace Utilities
 		Internal::Cast_imp(src, dst, std::is_integral<T>(), std::is_integral<U>());
 	}
 
-	/* Users should make sure the return type is correct. */
+	// T = Cast<T>(U); U -> T
+	/* NOTE: Users must make sure the data type of the return value is correct because
+	there is no way to ensure it. */
 	template <typename T, typename U>
 	std::enable_if_t<std::is_arithmetic<T>::value && std::is_arithmetic<U>::value, T> Cast(
 		U src)

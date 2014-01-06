@@ -5,6 +5,8 @@
 Declares and defines arithmetic operators and common functions for standard container
 classes.
 The operators are defined under global namespace for easier use. (maybe a bad idea?)
+The operators take container objects with the same base data type.
+Function templates can take container objects with different base data types.
 */
 
 #include <array>
@@ -19,7 +21,7 @@ Function overload is a good way to do this.
 Since C++ cannot overload different functions for different return data types, it is
 necessary to place return value at the function parameter list and return it as a reference.
 
-Define operators for only the same type operations.
+Overload operators for only the same type operations.
 Pre-cast source arrays to temporary variables with destination type, and then run the
 operation with the temporary variables.
 Functions defined in algorithm.h can be an alternative. */
@@ -173,14 +175,14 @@ std::array<T, N> operator--(std::array<T, N> &lhs, int)
 namespace Utilities
 {
 	// To be removed
-	template <typename T, typename U, std::size_t N>
-	std::enable_if_t<std::is_floating_point<U>::value, std::array<T, N>> RoundAs(
-		const std::array<U, N> &src)
-	{
-		std::array<T, N> dst;
-		RoundRange(src.cbegin(), src.cend(), dst.begin());
-		return dst;
-	}
+	//template <typename T, typename U, std::size_t N>
+	//std::enable_if_t<std::is_floating_point<U>::value, std::array<T, N>> RoundAs(
+	//	const std::array<U, N> &src)
+	//{
+	//	std::array<T, N> dst;
+	//	RoundRange(src.cbegin(), src.cend(), dst.begin());
+	//	return dst;
+	//}
 
 	template <typename T, typename U, std::size_t N>
 	std::enable_if_t<std::is_floating_point<T>::value, void> Round(
@@ -190,26 +192,26 @@ namespace Utilities
 	}
 
 	// To be removed
-	template <typename T, typename U, std::size_t N>
-	std::enable_if_t<!std::is_same<T, U>::value, std::array<T, N>> Cast(
-		const std::array<U, N> &src)
-	{
-		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
-			"Only arithmetic data types are supported for this class template.");
-		std::array<T, N> dst;
-		CastRange(src.cbegin(), src.cend(), dst.begin());
-		return dst;
-	}
+	//template <typename T, typename U, std::size_t N>
+	//std::enable_if_t<!std::is_same<T, U>::value, std::array<T, N>> Cast(
+	//	const std::array<U, N> &src)
+	//{
+	//	static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
+	//		"Only arithmetic data types are supported for this class template.");
+	//	std::array<T, N> dst;
+	//	CastRange(src.cbegin(), src.cend(), dst.begin());
+	//	return dst;
+	//}
 
 	// To be removed
-	template <typename T, typename U, std::size_t N>
-	std::enable_if_t<std::is_same<T, U>::value, std::array<T, N>> Cast(
-		const std::array<U, N> &src)
-	{
-		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
-			"Only arithmetic data types are supported for this class template.");
-		return src;
-	}
+	//template <typename T, typename U, std::size_t N>
+	//std::enable_if_t<std::is_same<T, U>::value, std::array<T, N>> Cast(
+	//	const std::array<U, N> &src)
+	//{
+	//	static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
+	//		"Only arithmetic data types are supported for this class template.");
+	//	return src;
+	//}
 
 	template <typename T, typename U, std::size_t N>
 	std::enable_if_t<!std::is_same<T, U>::value, void> Cast(

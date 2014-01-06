@@ -124,24 +124,20 @@ void TestImageProcessing(void)
 
 	// Copy image data from cv::Mat object to ImageFrame.
 	ImageFrame img1;
-	Size2D<ImageFrame::SizeType> szSrc1;
+	ImageSize szSrc1;
 	Utilities::Cast(cvSrc1.cols, szSrc1.width);
 	Utilities::Cast(cvSrc1.rows, szSrc1.height);
-	img1.CopyFrom(GetDataType(cvSrc1.depth()), reinterpret_cast<const char *>(cvSrc1.ptr()), szSrc1, cvSrc1.channels(), cvSrc1.cols * cvSrc1.channels() * cvSrc1.elemSize1());
+	img1.CopyFrom(reinterpret_cast<const ImageFrame::ByteType *>(cvSrc1.ptr()),
+		GetDataType(cvSrc1.depth()), szSrc1, cvSrc1.channels(),
+		cvSrc1.cols * cvSrc1.channels() * cvSrc1.elemSize1());
 	
 	// Copy image data from ImageFrame to cv::Mat.
-	cv::Mat cvDst1 = CreateCvMat(img1.dataType, img1.size, img1.depth);
-#if defined(_MSC_VER)
-	std::copy_n(img1.Cbegin(), img1.data.size(),
-		stdext::checked_array_iterator<unsigned char *>(cvDst1.ptr(), img1.data.size()));
-#else
-	std::copy_n(img1.Cbegin(), img1.data.size(), cvDst1.ptr());
-#endif
+	cv::Mat cvDst1 = CreateCvMat(img1);
 	cv::namedWindow(std::string("Copied 1"), CV_WINDOW_AUTOSIZE);
 	cv::imshow(std::string("Copied 1"), cvDst1);
 	cv::waitKey(0);
 
-	// Copy an ROI to a separate ImageFrame<T>.
+	// Copy an ROI to a separate ImageFrame.
 	ImageFrame::ROI roiSrc1({ 100, 100 }, img1.size - ImageFrame::SizeType(100));
 	ImageFrame img2 = img1.CopyTo(roiSrc1);
 

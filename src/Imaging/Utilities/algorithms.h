@@ -17,7 +17,7 @@ namespace Utilities
 	/* Warning: C = A + B vs. A += B
 
 	The operation & assignment {+=, -=, *=} might have been implemented using {+, -, *}
-	by setting the output iterator the same as one of input (lhs) iterator.
+	by setting the output iterator as the same one as the input (lhs) iterator.
 	Must NOT do so because the iterators of lhs will be increased twice per loop.
 	Instead, make separate implementations for such scenario. */
 
@@ -90,6 +90,7 @@ namespace Utilities
 			Decrement(*it);
 	}
 
+	// Fills the range value. Similar to range() or arange() in Python.
 	template <typename Iterator>
 	std::enable_if_t<std::is_arithmetic<typename Iterator::value_type>::value, void> FillRange(
 		Iterator it, Iterator itLast)

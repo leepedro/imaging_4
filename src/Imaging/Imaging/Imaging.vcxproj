@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="image.cpp" />
+    <ClCompile Include="opencv_interface.cpp" />
     <ClCompile Include="test_imaging.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

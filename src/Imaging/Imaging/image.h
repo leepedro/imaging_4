@@ -7,14 +7,10 @@
 
 namespace Imaging
 {
-	////////////////////////////////////////////////////////////////////////////////////////
-	// Forward declarations.
+	////////////////////////////////////////////////////////////////////////////////////
+	// DataType and functions using DataType.
 
-	//class ImageFrame;
-
-	// Forward declarations.
-	////////////////////////////////////////////////////////////////////////////////////////
-
+	// Data type supported as image data.
 	enum struct DataType
 	{
 		UNDEFINED,
@@ -31,11 +27,13 @@ namespace Imaging
 		DOUBLE
 	};
 
+	////////////////////////////////////////////////////////////////////////////////////
+	// GetDataType<T>()
+
 	template <typename T>
 	inline DataType GetDataType(void)
 	{
-		static_assert(false, "Unsupported data type.");
-		throw std::logic_error("This function must not be called as it is disabled.");
+		return DataType::UNDEFINED;
 	}
 
 	template <>
@@ -104,7 +102,14 @@ namespace Imaging
 		return DataType::DOUBLE;
 	}
 
+	// GetDataType<T>()
+	////////////////////////////////////////////////////////////////////////////////////
+
 	std::size_t GetNumBytes(DataType ty);
+
+	// DataType and functions using DataType.
+	////////////////////////////////////////////////////////////////////////////////////
+
 
 	/* Pixel-based bitmap (raster) image.
 
@@ -112,7 +117,7 @@ namespace Imaging
 	pointer and capable of padding bytes if necessary. The byte unit type can be either
 	{char, unsigned char, signed char}.
 	The image data can be accessed through iterators by accessing methods.
-	The dimension of image data can be changed during the runtime through resizing the
+	The dimension of image data can be changed during the runtime by resizing the
 	std::vector<byte>.
 
 	Since the data type of images are usually known after loading an image file, which is
@@ -137,12 +142,16 @@ namespace Imaging
 	public:
 		////////////////////////////////////////////////////////////////////////////////////
 		// Types and constants.
+
 		typedef char ByteType;
 		// for pixel coordinate and raw (byte) data position.
 		typedef std::vector<ByteType>::size_type SizeType;
 		typedef std::vector<ByteType>::iterator Iterator;
 		typedef std::vector<ByteType>::const_iterator ConstIterator;
 		typedef RectTypeB<SizeType, SizeType> ROI;
+
+		// Types and constants.
+		////////////////////////////////////////////////////////////////////////////////////
 
 		////////////////////////////////////////////////////////////////////////////////////
 		// Default constructors.
@@ -151,14 +160,18 @@ namespace Imaging
 		ImageFrame(ImageFrame &&src);
 		ImageFrame &operator=(const ImageFrame &src);
 		ImageFrame &operator=(ImageFrame &&src);
+		// Default constructors.
+		////////////////////////////////////////////////////////////////////////////////////
 
 		////////////////////////////////////////////////////////////////////////////////////
 		// Custom constructors.
 		ImageFrame(DataType ty, const Size2D<SizeType> &sz, SizeType d = 1);
-		ImageFrame(DataType ty, const std::vector<ByteType> &srcData,
+		ImageFrame(const std::vector<ByteType> &srcData, DataType ty,
 			const Size2D<SizeType> &sz, SizeType d = 1);
-		ImageFrame(DataType ty, std::vector<ByteType> &&srcData,
+		ImageFrame(std::vector<ByteType> &&srcData, DataType ty,
 			const Size2D<SizeType> &sz, SizeType d = 1);
+		// Custom constructors.
+		////////////////////////////////////////////////////////////////////////////////////
 
 		////////////////////////////////////////////////////////////////////////////////////
 		// Accessors.
@@ -177,7 +190,7 @@ namespace Imaging
 
 		/* Copies image data from an std::vector<byte> with an identical allocation scheme.
 		Destination is resized per the size of source data. */
-		void CopyFrom(DataType ty, const std::vector<ByteType> &srcData,
+		void CopyFrom(const std::vector<ByteType> &srcData, DataType ty,
 			const Size2D<SizeType> &sz, SizeType d = 1);
 
 		/* Copies image data from a raw pointer.
@@ -185,7 +198,7 @@ namespace Imaging
 		Destination is resized per the size of source data.
 		NOTE: Since there is no way to check the dimension of source data, users must ensure
 		that the size of source data is correct. */
-		void CopyFrom(DataType ty, const ByteType *src, const Size2D<SizeType> &sz,
+		void CopyFrom(const ByteType *src, DataType ty, const Size2D<SizeType> &sz,
 			SizeType d, SizeType stepBytes);
 
 		/* Creates a seprate ImageFrame object with the image data within the ROI.
@@ -196,11 +209,11 @@ namespace Imaging
 
 		/* Moves image data from an std::vector<byte> with an identical allocation scheme.
 		Destination is resized per the size of source data. */
-		void MoveFrom(DataType ty, std::vector<ByteType> &&srcData,
+		void MoveFrom(std::vector<ByteType> &&srcData, DataType ty,
 			const Size2D<SizeType> &sz, SizeType d = 1);
 
 		template <typename T>
-		void Reset(const Size2D<SizeType> &sz, SizeType d = 1, T value = 0);
+		void Reset(const Size2D<SizeType> &sz, SizeType d = 1);
 		void Reset(DataType ty, const Size2D<SizeType> &sz, SizeType d = 1);
 
 	protected:
@@ -224,11 +237,110 @@ namespace Imaging
 		Size2D<SizeType> size_ = Size2D<SizeType>(0, 0);
 	};
 
-	typedef Size2D<ImageFrame::SizeType> ImageSize;
+	// Custom name for frequently used classes.
+	typedef ImageFrame::SizeType ImageSizeType;
+	typedef Size2D<ImageSizeType> ImageSize;
 
+
+}
+
+//#include "image_inl.h"
+
+namespace Imaging
+{
+	////////////////////////////////////////////////////////////////////////////////////
+	// ImageFrame
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// Constructors.
+
+	inline ImageFrame::ImageFrame(const ImageFrame &src) : ImageFrame()
+	{
+		*this = src;
+	}
+
+	inline ImageFrame::ImageFrame(ImageFrame &&src) : ImageFrame()
+	{
+		*this = std::move(src);
+	}
+
+	inline ImageFrame::ImageFrame(DataType ty, const Size2D<SizeType> &sz, SizeType d) :
+		ImageFrame()
+	{
+		this->Reset(ty, sz, d);
+	}
+
+	inline ImageFrame::ImageFrame(const std::vector<ByteType> &srcData, DataType ty,
+		const Size2D<SizeType> &sz, SizeType d) : ImageFrame()
+	{
+		this->CopyFrom(srcData, ty, sz, d);
+	}
+
+	inline ImageFrame::ImageFrame(std::vector<ByteType> &&srcData, DataType ty,
+		const Size2D<SizeType> &sz, SizeType d) : ImageFrame()
+	{
+		this->MoveFrom(std::move(srcData), ty, sz, d);
+	}
+
+	// Constructors.
+	////////////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// Accessors.
+
+	inline ImageFrame::Iterator ImageFrame::Begin(const Point2D<SizeType> &pt)
+	{
+		if (pt == Point2D<SizeType>{ 0, 0 })
+			return this->data_.begin();
+		else
+		{
+			this->EvalPosition(pt);
+			return this->data_.begin() + this->GetOffset(pt);
+		}
+	}
+
+	inline ImageFrame::ConstIterator ImageFrame::Cbegin(const Point2D<SizeType> &pt) const
+	{
+		if (pt == Point2D<SizeType>{ 0, 0 })
+			return this->data.cbegin();
+		else
+		{
+			this->EvalPosition(pt);
+			return this->data.cbegin() + this->GetOffset(pt);
+		}
+	}
+
+	inline ImageFrame::SizeType ImageFrame::GetOffset(const Point2D<SizeType> &pt) const
+	{
+		auto bytes_line = ImageFrame::GetBytesPerLine(this->dataType, this->size.width,
+			this->depth);
+		return bytes_line * pt.y + GetNumBytes(this->dataType) * this->depth * pt.x;
+	}
+
+	// Accessors.
+	////////////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////////////
+	// Methods.
+
+	inline void ImageFrame::EvalPosition(const Point2D<SizeType> &pt) const
+	{
+		this->EvalRoi(pt, { 1, 1 });
+	}
+
+	inline void ImageFrame::EvalRoi(const ROI &roi) const
+	{
+		this->EvalRoi(roi.origin, roi.size);
+	}
+
+	inline ImageFrame::SizeType ImageFrame::GetBytesPerLine(DataType ty, SizeType w,
+		SizeType d)
+	{
+		return w * d * GetNumBytes(ty) + 0;
+	}
 
 	template <typename T>
-	void ImageFrame::Reset(const Size2D<SizeType> &sz, SizeType d, T value)
+	void ImageFrame::Reset(const Size2D<SizeType> &sz, SizeType d)
 	{
 		// Compute memory requirement.
 		DataType ty = GetDataType<T>();
@@ -237,7 +349,7 @@ namespace Imaging
 
 		// Memory re-allocation.
 		if (this->data.size() != bytes_total)
-			this->data_.resize(bytes_total, value);
+			this->data_.resize(bytes_total);
 
 		// Update dimension.
 		this->bytesPerLine_ = bytes_line;
@@ -245,6 +357,11 @@ namespace Imaging
 		this->depth_ = d;
 		this->size_ = sz;
 	}
-}
 
+	// Methods.
+	////////////////////////////////////////////////////////////////////////////////////
+
+	// ImageFrame
+	////////////////////////////////////////////////////////////////////////////////////
+}
 #endif
