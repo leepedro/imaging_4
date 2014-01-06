@@ -25,7 +25,7 @@ void TestSafeOperations(void)
 
 	ul3 = ul1 - i2;		// any subtraction has negative overflow risk.
 
-	using namespace Imaging;
+	using namespace Utilities;
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Addition safe operations.
 	// Function arguments can be either (T, U, U&) or (T, U, T&).
@@ -93,6 +93,10 @@ void TestSafeOperations(void)
 	//Subtract(ui2, d1, d3);	// widening floating
 	Subtract(d2, ui1, d3);	// widening floating
 
+	// Casting
+	Cast(d1, i1);
+	i3 = Cast<int>(d1);
+
 	// Overflow detections.
 	try
 	{	// positive overflow
@@ -121,7 +125,8 @@ void TestSafeOperations(void)
 	try
 	{	// positive overflow
 		int a = 256;
-		unsigned char b = SafeCast<unsigned char>(a);
+		unsigned char b;
+		Cast(a, b);
 	}
 	catch (const std::overflow_error &e)
 	{
@@ -150,17 +155,17 @@ void TestContainers(void)
 
 	// Functions for arrays with the same data type.
 	// (T, U, T&) or (T, U, U&)
-	Imaging::AddRange(arrayI1.cbegin(), arrayI1.cend(), arrayUI1.cbegin(), arrayI3.begin());
-	Imaging::AddRange(arrayI1.cbegin(), arrayI1.cend(), arrayUI1.cbegin(), arrayUI3.begin());
-	Imaging::MultiplyRange(arrayI1.cbegin(), arrayI1.cend(), arrayUI1.cbegin(), arrayI3.begin());
-	Imaging::MultiplyRange(arrayI1.cbegin(), arrayI1.cend(), arrayUI1.cbegin(), arrayUI3.begin());
+	Utilities::AddRange(arrayI1.cbegin(), arrayI1.cend(), arrayUI1.cbegin(), arrayI3.begin());
+	Utilities::AddRange(arrayI1.cbegin(), arrayI1.cend(), arrayUI1.cbegin(), arrayUI3.begin());
+	Utilities::MultiplyRange(arrayI1.cbegin(), arrayI1.cend(), arrayUI1.cbegin(), arrayI3.begin());
+	Utilities::MultiplyRange(arrayI1.cbegin(), arrayI1.cend(), arrayUI1.cbegin(), arrayUI3.begin());
 	// only (T, U, T&)
-	Imaging::SubtractRange(arrayI2.cbegin(), arrayI2.cend(), arrayUI1.cbegin(), arrayI3.begin());
+	Utilities::SubtractRange(arrayI2.cbegin(), arrayI2.cend(), arrayUI1.cbegin(), arrayI3.begin());
 	
 	// NOTE: A += B requires different function from A + B -> C.
-	Imaging::AddRange(arrayUI1.cbegin(), arrayUI1.cend(), arrayI3.begin());
-	Imaging::MultiplyRange(arrayUI1.cbegin(), arrayUI1.cend(), arrayI3.begin());
-	Imaging::SubtractRange(arrayUI1.cbegin(), arrayUI1.cend(), arrayI3.begin());
+	Utilities::AddRange(arrayUI1.cbegin(), arrayUI1.cend(), arrayI3.begin());
+	Utilities::MultiplyRange(arrayUI1.cbegin(), arrayUI1.cend(), arrayI3.begin());
+	Utilities::SubtractRange(arrayUI1.cbegin(), arrayUI1.cend(), arrayI3.begin());
 
 	arrayI3 = arrayI1 + 2;
 	arrayI3 = arrayI1 - 2;
@@ -172,9 +177,11 @@ void TestContainers(void)
 
 	// Functions.
 	std::array<double, 2> arrayD1 = { 1.5, 2.5 };
-	arrayI3 = Imaging::RoundAs<int>(arrayD1);
-	arrayI3 = Imaging::Cast<int>(arrayD1);
-	std::vector<int> v1 = Imaging::GetRangeVector<int>(10);
+	//arrayI3 = Utilities::RoundAs<int>(arrayD1);
+	Utilities::Round(arrayD1, arrayI3);
+	//arrayI3 = Utilities::Cast<int>(arrayD1);
+	Utilities::Cast(arrayD1, arrayI3);
+	std::vector<int> v1 = Utilities::GetRangeVector<int>(10);
 }
 
 int main(void)

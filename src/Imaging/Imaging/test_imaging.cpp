@@ -1,8 +1,6 @@
 #include <iostream>
 
 #include "utilities/containers.h"
-//#include "utilities/algorithms.h"
-//#include "coordinates.h"
 #include "image.h"
 #include "opencv_interface.h"
 
@@ -34,7 +32,7 @@ void TestPoint2D_imp(void)
 	Imaging::Point2D<T> pt9(11, 12);
 
 	Imaging::Point2D<T> pt10;
-	// std::array<T, 2>::operator= + Point2D(const std::array<T, 2> &) ???
+	// Point2D(const std::array<T, 2> &) + (default) Point2D &operator=(const Point2D<T> &)  ???
 	pt10 = array1;
 
 	// The operators of std::array<T, N> work OUTSIDE of the namespace. Great!
@@ -65,49 +63,15 @@ void TestPoint2D_imp(void)
 	bool b1 = pt23 == pt24;		// true
 	bool b2 = pt25 != pt26;		// false
 
-	//std::array<int, 2> arrayI2 = Imaging::Cast<int>(array1);
-	Imaging::Point2D<int> ptInt;
-	Imaging::CastRange(pt1.cbegin(), pt1.cend(), ptInt.begin());
-
-	//Imaging::Point2D<int> ptInt = Imaging::Cast<int>(pt1);
-	//Imaging::Point2D<int> ptInt = { 1, 2 };
-	//Imaging::Point2D<T> pt11 = pt1 + ptInt;	// {2, 4}
-	//Imaging::Point2D<T> pt12 = pt1 - ptInt;	// {0, 0}
-	//Imaging::Point2D<T> pt13 = pt1 * ptInt;	// {1, 4}
-
-	//pt14 += ptInt;	// {2, 4}
-	//pt15 -= ptInt;	// {0, 0}
-	//pt16 *= ptInt;	// {1, 4}
-
-	//Imaging::Point2D<T> pt17 = pt1 + static_cast<int>(1);	// {2, 3}
-	//Imaging::Point2D<T> pt18 = pt1 - static_cast<int>(1);	// {0, 1}
-	//Imaging::Point2D<T> pt19 = pt1 * static_cast<int>(1);	// {1, 2}
-
-	//pt20 += static_cast<int>(1);	// {2, 3}
-	//pt21 -= static_cast<int>(1);	// {0, 1}
-	//pt22 *= static_cast<int>(1);	// {1, 2}
-
-
-
-	// Point2D(const Point2D<U> &)
-	//Imaging::Point2D<T> pt27 = ptInt;
-
-	// Point2D(const Point2D<U> &) + (default) Point2D &operator=(const Point2D<T> &)
-	//ptInt = pt27;
+	Imaging::Point2D<int> ptInt1, ptInt2;
+	Utilities::CastRange(pt1.cbegin(), pt1.cend(), ptInt1.begin());
+	Utilities::Cast(pt1, ptInt2);
 
 	std::cout << "Completed testing Poinr2D<" << typeid(T).name() << ">." << std::endl;
 }
 
 void TestPoint2D(void)
 {
-	std::array<double, 2> arrayD1{ 1.0, 2.0 };
-	std::array<int, 2> arrayI2 = Imaging::Cast<int>(arrayD1);
-	std::array<int, 2> arrayI3 = Imaging::Cast<int>(Imaging::Point2D<double>(1.0, 2.0));
-	//std::array<int, 2> arrayI4 = Imaging::Cast<int, unsigned int, 2>(Imaging::Point2D<unsigned int>(1, 2));
-	//std::array<int, 2> arrayI5 = Imaging::Point2D<int>(1, 2);
-	std::array<int, 2> arrayI6 = Imaging::RoundAs<int>(Imaging::Point2D<double>(1.0, 2.0));
-	Imaging::Point2D<int> ptI6 = Imaging::RoundAs<int>(Imaging::Point2D<double>(1.0, 2.0));
-
 	TestPoint2D_imp<int>();
 	TestPoint2D_imp<unsigned int>();
 	TestPoint2D_imp<long long>();
@@ -129,8 +93,70 @@ void TestROI(void)
 	//	std::cout << "good" << std::endl;
 }
 
+void TestImage(void)
+{
+	using namespace Imaging;
+
+	ImageFrame img1;
+	img1.Reset<unsigned char>({ 16, 8 }, 3);
+	img1.Reset<unsigned char>({ 48, 8 }, 1);
+	img1.Reset<unsigned char>({ 48, 8 });
+	img1.Reset<int>({ 4, 8 }, 3);
+	img1.Reset<int>({ 12, 8 }, 1);
+	img1.Reset<int>({ 12, 8 });
+	img1.Reset(DataType::UCHAR, { 16, 8 }, 3);
+	img1.Reset(DataType::UCHAR, { 48, 8 }, 1);
+	img1.Reset(DataType::UCHAR, { 48, 8 });
+	img1.Reset(DataType::INT, { 4, 8 }, 3);
+	img1.Reset(DataType::INT, { 12, 8 }, 1);
+	img1.Reset(DataType::INT, { 12, 8 });
+}
+
+void TestImageProcessing(void)
+{
+	using namespace Imaging;
+
+	// Load an image from a file.
+	cv::Mat cvSrc1 = cv::imread(std::string("Lenna.png"), CV_LOAD_IMAGE_COLOR);
+	cv::namedWindow(std::string("Source 1"), CV_WINDOW_AUTOSIZE);
+	cv::imshow(std::string("Source 1"), cvSrc1);
+	cv::waitKey(0);
+
+	// Copy image data from cv::Mat object to ImageFrame.
+	ImageFrame img1;
+	Size2D<ImageFrame::SizeType> szSrc1;
+	Utilities::Cast(cvSrc1.cols, szSrc1.width);
+	Utilities::Cast(cvSrc1.rows, szSrc1.height);
+	img1.CopyFrom(GetDataType(cvSrc1.depth()), reinterpret_cast<const char *>(cvSrc1.ptr()), szSrc1, cvSrc1.channels(), cvSrc1.cols * cvSrc1.channels() * cvSrc1.elemSize1());
+	
+	// Copy image data from ImageFrame to cv::Mat.
+	cv::Mat cvDst1 = CreateCvMat(img1.dataType, img1.size, img1.depth);
+#if defined(_MSC_VER)
+	std::copy_n(img1.Cbegin(), img1.data.size(),
+		stdext::checked_array_iterator<unsigned char *>(cvDst1.ptr(), img1.data.size()));
+#else
+	std::copy_n(img1.Cbegin(), img1.data.size(), cvDst1.ptr());
+#endif
+	cv::namedWindow(std::string("Copied 1"), CV_WINDOW_AUTOSIZE);
+	cv::imshow(std::string("Copied 1"), cvDst1);
+	cv::waitKey(0);
+
+	// Copy an ROI to a separate ImageFrame<T>.
+	ImageFrame::ROI roiSrc1({ 100, 100 }, img1.size - ImageFrame::SizeType(100));
+	ImageFrame img2 = img1.CopyTo(roiSrc1);
+
+	// Create a cv::Mat object sharing the memory.
+	auto it = img2.Begin();
+	cv::Mat cvDst2 = CreateCvMatShared(img2);
+	cv::namedWindow(std::string("ROI and Shared 1"), CV_WINDOW_AUTOSIZE);
+	cv::imshow(std::string("ROI and Shared 1"), cvDst2);
+	cv::waitKey(0);
+}
+
 int main(void)
 {
 	TestPoint2D();
 	TestROI();
+	TestImage();
+	TestImageProcessing();
 }

@@ -87,7 +87,7 @@ std::array<T, N> operator*(const std::array<T, N> &lhs, T rhs)
 template <typename T, std::size_t N>
 std::array<T, N> &operator+=(std::array<T, N> &lhs, const std::array<T, N> &rhs)
 {
-	Imaging::AddRange(rhs.cbegin(), rhs.cend(), lhs.begin());
+	Utilities::AddRange(rhs.cbegin(), rhs.cend(), lhs.begin());
 	return lhs;
 }
 
@@ -95,7 +95,7 @@ std::array<T, N> &operator+=(std::array<T, N> &lhs, const std::array<T, N> &rhs)
 template <typename T, std::size_t N>
 std::array<T, N> &operator-=(std::array<T, N> &lhs, const std::array<T, N> &rhs)
 {
-	Imaging::SubtractRange(rhs.cbegin(), rhs.cend(), lhs.begin());
+	Utilities::SubtractRange(rhs.cbegin(), rhs.cend(), lhs.begin());
 	return lhs;
 }
 
@@ -103,7 +103,7 @@ std::array<T, N> &operator-=(std::array<T, N> &lhs, const std::array<T, N> &rhs)
 template <typename T, std::size_t N>
 std::array<T, N> &operator*=(std::array<T, N> &lhs, const std::array<T, N> &rhs)
 {
-	Imaging::MultiplyRange(rhs.cbegin(), rhs.cend(), lhs.begin());
+	Utilities::MultiplyRange(rhs.cbegin(), rhs.cend(), lhs.begin());
 	return lhs;
 }
 
@@ -112,7 +112,7 @@ template <typename T, std::size_t N>
 std::array<T, N> &operator+=(std::array<T, N> &lhs, T rhs)
 {
 	for (auto &value : lhs)
-		Imaging::Add(value, rhs, value);
+		Utilities::Add(value, rhs, value);
 	return lhs;
 }
 
@@ -121,7 +121,7 @@ template <typename T, std::size_t N>
 std::array<T, N> &operator-=(std::array<T, N> &lhs, T rhs)
 {
 	for (auto &value : lhs)
-		Imaging::Subtract(value, rhs, value);
+		Utilities::Subtract(value, rhs, value);
 	return lhs;
 }
 
@@ -130,7 +130,7 @@ template <typename T, std::size_t N>
 std::array<T, N> &operator*=(std::array<T, N> &lhs, T rhs)
 {
 	for (auto &value : lhs)
-		Imaging::Multiply(value, rhs, value);
+		Utilities::Multiply(value, rhs, value);
 	return lhs;
 }
 
@@ -139,7 +139,7 @@ template <typename T, std::size_t N>
 std::array<T, N> &operator++(std::array<T, N> &rhs)
 {
 	for (auto &value : rhs)
-		Imaging::Increment(value);
+		Utilities::Increment(value);
 	return rhs;
 }
 
@@ -157,7 +157,7 @@ template <typename T, std::size_t N>
 std::array<T, N> &operator--(std::array<T, N> &rhs)
 {
 	for (auto &value : rhs)
-		Imaging::Decrement(value);
+		Utilities::Decrement(value);
 	return rhs;
 }
 
@@ -170,8 +170,9 @@ std::array<T, N> operator--(std::array<T, N> &lhs, int)
 	return temp;
 }
 
-namespace Imaging
+namespace Utilities
 {
+	// To be removed
 	template <typename T, typename U, std::size_t N>
 	std::enable_if_t<std::is_floating_point<U>::value, std::array<T, N>> RoundAs(
 		const std::array<U, N> &src)
@@ -181,6 +182,14 @@ namespace Imaging
 		return dst;
 	}
 
+	template <typename T, typename U, std::size_t N>
+	std::enable_if_t<std::is_floating_point<T>::value, void> Round(
+		const std::array<T, N> &src, std::array<U, N> &dst)
+	{
+		RoundRange(src.cbegin(), src.cend(), dst.begin());
+	}
+
+	// To be removed
 	template <typename T, typename U, std::size_t N>
 	std::enable_if_t<!std::is_same<T, U>::value, std::array<T, N>> Cast(
 		const std::array<U, N> &src)
@@ -192,6 +201,7 @@ namespace Imaging
 		return dst;
 	}
 
+	// To be removed
 	template <typename T, typename U, std::size_t N>
 	std::enable_if_t<std::is_same<T, U>::value, std::array<T, N>> Cast(
 		const std::array<U, N> &src)
@@ -199,6 +209,20 @@ namespace Imaging
 		static_assert(std::is_arithmetic<T>::value && std::is_arithmetic<U>::value,
 			"Only arithmetic data types are supported for this class template.");
 		return src;
+	}
+
+	template <typename T, typename U, std::size_t N>
+	std::enable_if_t<!std::is_same<T, U>::value, void> Cast(
+		const std::array<T, N> &src, std::array<U, N> &dst)
+	{
+		CastRange(src.cbegin(), src.cend(), dst.begin());
+	}
+
+	template <typename T, typename U, std::size_t N>
+	std::enable_if_t<std::is_same<T, U>::value, void> Cast(
+		const std::array<T, N> &src, std::array<U, N> &dst)
+	{
+		dst = src;
 	}
 
 	template <typename T>

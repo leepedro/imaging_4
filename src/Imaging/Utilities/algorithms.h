@@ -8,7 +8,7 @@ Features are designed as non-member function templates in a namespace.
 
 #include "safe_operations.h"
 
-namespace Imaging
+namespace Utilities
 {
 	/* Function arguments.
 	The arguments are defined as iterators instead of containers, so these functions can be
@@ -90,33 +90,42 @@ namespace Imaging
 			Decrement(*it);
 	}
 
-	/* Fills the integral range value in an ascending order from zero while preventing
-	overflow by comparing the range value with the maximum value at each iteration.
-	Once the range value reached the maximum value, it goes back to zero. (inefficient) */
 	template <typename Iterator>
-	std::enable_if_t<std::is_integral<typename Iterator::value_type>::value, void> FillRange(
+	std::enable_if_t<std::is_arithmetic<typename Iterator::value_type>::value, void> FillRange(
 		Iterator it, Iterator itLast)
 	{
-		for (auto value = static_cast<typename Iterator::value_type>(0),
-			limit = std::numeric_limits<typename Iterator::value_type>::max(); it != itLast;
-			++it)
-		{
-			*it = value;
-			if (value == limit)
-				value = 0;
-			else
-				++value;
-		}
+		Internal::FillRange_imp(it, itLast, std::is_integral<typename Iterator::value_type>());
 	}
 
-	// Fills the floating point range value in an ascending order without the range check.
-	template <typename Iterator>
-	std::enable_if_t<std::is_floating_point<typename Iterator::value_type>::value, void> FillRange(
-		Iterator it, Iterator itLast)
+	namespace Internal
 	{
-		for (auto value = static_cast<typename Iterator::value_type>(0); it != itLast; ++it,
-			++value)
-			*it = value;
+		/* Fills the integral range value in an ascending order from zero while preventing
+		overflow by comparing the range value with the maximum value at each iteration.
+		Once the range value reached the maximum value, it goes back to zero. (inefficient) */
+		template <typename Iterator>
+		void FillRange_imp(Iterator it, Iterator itLast, std::true_type)
+		{
+			for (auto value = static_cast<typename Iterator::value_type>(0),
+				limit = std::numeric_limits<typename Iterator::value_type>::max();
+				it != itLast; ++it)
+			{
+				*it = value;
+				if (value == limit)
+					value = 0;
+				else
+					++value;
+			}
+		}
+
+		// Fills the floating point range value in an ascending order without the range
+		// check.
+		template <typename Iterator>
+		void FillRange_imp(Iterator it, Iterator itLast, std::false_type)
+		{
+			for (auto value = static_cast<typename Iterator::value_type>(0); it != itLast;
+				++it, ++value)
+				*it = value;
+		}
 	}
 
 	// Copies periodically located data using step size (for both source and destination). 
@@ -137,7 +146,7 @@ namespace Imaging
 	void CastRange(InputIterator itSrc, InputIterator itSrcLast, OutputIterator itDst)
 	{
 		for (; itSrc != itSrcLast; ++itSrc, ++itDst)
-			*itDst = SafeCast<typename OutputIterator::value_type>(*itSrc);
+			Cast(*itSrc, *itDst);
 	}
 
 	template <typename InputIterator, typename OutputIterator>
@@ -145,7 +154,7 @@ namespace Imaging
 		void> RoundRange(InputIterator itSrc, InputIterator itSrcLast, OutputIterator itDst)
 	{
 		for (; itSrc != itSrcLast; ++itSrc, ++itDst)
-			*itDst = SafeCast<typename OutputIterator::value_type>(std::round(*itSrc));
+			Cast(std::round(*itSrc), *itDst);
 	}
 
 }

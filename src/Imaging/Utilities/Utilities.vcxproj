@@ -104,7 +104,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy *.h ..\Imaging\utilities</Command>
+      <Command>copy *.h* ..\Imaging\utilities</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy working (passing test) header files into destination directories.</Message>

@@ -111,14 +111,24 @@ namespace Imaging
 
 	ImageFrame::Iterator ImageFrame::Begin(const Point2D<SizeType> &pt)
 	{
-		this->EvalPosition(pt);
-		return this->data_.begin() + this->GetOffset(pt);
+		if (pt == Point2D<SizeType>{ 0, 0 })
+			return this->data_.begin();
+		else
+		{
+			this->EvalPosition(pt);
+			return this->data_.begin() + this->GetOffset(pt);
+		}
 	}
 
 	ImageFrame::ConstIterator ImageFrame::Cbegin(const Point2D<SizeType> &pt) const
 	{
-		this->EvalPosition(pt);
-		return this->data.cbegin() + this->GetOffset(pt);
+		if (pt == Point2D<SizeType>{ 0, 0 })
+			return this->data.cbegin();
+		else
+		{
+			this->EvalPosition(pt);
+			return this->data.cbegin() + this->GetOffset(pt);
+		}
 	}
 
 	ImageFrame::SizeType ImageFrame::GetOffset(const Point2D<SizeType> &pt) const
@@ -204,7 +214,7 @@ namespace Imaging
 			auto itDst = imgDst.Begin();
 			auto bytes_line_roi = GetNumBytes(this->dataType) * roiSrc.size.width *
 				this->depth;
-			CopyLines(itSrc, this->bytesPerLine, itDst, imgDst.bytesPerLine, bytes_line_roi,
+			Utilities::CopyLines(itSrc, this->bytesPerLine, itDst, imgDst.bytesPerLine, bytes_line_roi,
 				roiSrc.size.height);
 		}
 

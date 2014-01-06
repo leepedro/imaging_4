@@ -224,6 +224,8 @@ namespace Imaging
 		Size2D<SizeType> size_ = Size2D<SizeType>(0, 0);
 	};
 
+	typedef Size2D<ImageFrame::SizeType> ImageSize;
+
 
 	template <typename T>
 	void ImageFrame::Reset(const Size2D<SizeType> &sz, SizeType d, T value)

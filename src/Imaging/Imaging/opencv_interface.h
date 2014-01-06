@@ -1,8 +1,6 @@
 #if !defined(OPENCV_INTERFACE_H)
 #define OPENCV_INTERFACE_H
 
-#include <sstream>
-
 #include "opencv2/opencv.hpp"
 
 #include "utilities/safe_operations.h"
@@ -10,26 +8,28 @@
 
 namespace Imaging
 {
-	int GetOpenCvType(DataType ty, std::size_t d)
+	inline int GetOpenCvType(DataType ty, std::size_t d)
 	{
+		int depth;
+		Utilities::Cast(d, depth);
 		switch (ty)
 		{
 		case DataType::CHAR:
-			return CV_MAKETYPE(CV_8S, SafeCast<int>(d));
+			return CV_MAKETYPE(CV_8S, depth);
 		case DataType::SCHAR:
-			return CV_MAKETYPE(CV_8S, SafeCast<int>(d));
+			return CV_MAKETYPE(CV_8S, depth);
 		case DataType::UCHAR:
-			return CV_MAKETYPE(CV_8U, SafeCast<int>(d));
+			return CV_MAKETYPE(CV_8U, depth);
 		case DataType::SHORT:
-			return CV_MAKETYPE(CV_16S, SafeCast<int>(d));
+			return CV_MAKETYPE(CV_16S, depth);
 		case DataType::USHORT:
-			return CV_MAKETYPE(CV_16U, SafeCast<int>(d));
+			return CV_MAKETYPE(CV_16U, depth);
 		case DataType::INT:
-			return CV_MAKETYPE(CV_32S, SafeCast<int>(d));
+			return CV_MAKETYPE(CV_32S, depth);
 		case DataType::FLOAT:
-			return CV_MAKETYPE(CV_32F, SafeCast<int>(d));
+			return CV_MAKETYPE(CV_32F, depth);
 		case DataType::DOUBLE:
-			return CV_MAKETYPE(CV_64F, SafeCast<int>(d));
+			return CV_MAKETYPE(CV_64F, depth);
 		default:
 			std::ostringstream errMsg;
 			errMsg << typeid(DataType).name() << "::" <<
@@ -39,7 +39,7 @@ namespace Imaging
 		}
 	}
 
-	DataType GetDataType(int cvType)
+	inline DataType GetDataType(int cvType)
 	{
 		switch (cvType)
 		{
@@ -60,6 +60,20 @@ namespace Imaging
 		default:
 			throw std::logic_error("Unrecognized OpenCV data type.");
 		}
+	}
+
+	inline cv::Mat CreateCvMat(DataType ty, const ImageSize &sz, ImageFrame::SizeType d)
+	{
+		return cv::Mat(Utilities::Cast<int>(sz.height), Utilities::Cast<int>(sz.width),
+			GetOpenCvType(ty, d));
+	}
+
+	inline cv::Mat CreateCvMatShared(ImageFrame &imgSrc)
+	{
+		auto it = imgSrc.Begin();
+		return cv::Mat(Utilities::Cast<int>(imgSrc.size.height),
+			Utilities::Cast<int>(imgSrc.size.width),
+			GetOpenCvType(imgSrc.dataType, imgSrc.depth), &(*it));
 	}
 }
 
