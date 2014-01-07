@@ -204,11 +204,7 @@ namespace Imaging
 		}
 	}
 
-	/* Static member function.
-	Since this function does not actually use any class member, this method is declared as a
-	static function.
-	It is declared as a protected function for now because it is not expected to be used by
-	any client. */
+	// static
 	void ImageFrame::EvalSize(DataType ty, SizeType length, SizeType w, SizeType h,
 		SizeType d)
 	{
