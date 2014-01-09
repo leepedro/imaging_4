@@ -183,9 +183,6 @@ std::vector<T> operator+(const std::vector<T> &lhs, const std::vector<T> &rhs)
 	result.reserve(lhs.size());
 	std::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), std::back_inserter(result),
 		[](T a, T b) { T c; Utilities::Add(a, b, c); return c; });
-	//std::vector<T> result(lhs.size());
-	//std::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), result.begin(),
-	//	std::function<void(T, T, T&)>(Utilities::Add));
 	return result;
 }
 

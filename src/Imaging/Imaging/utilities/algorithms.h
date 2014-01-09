@@ -92,46 +92,6 @@ namespace Utilities
 			Decrement(*it);
 	}
 
-	//// Fills the range value. Similar to range() or arange() in Python.
-	//template <typename Iterator>
-	//std::enable_if_t<std::is_arithmetic<typename Iterator::value_type>::value, void> FillRange(
-	//	Iterator it, Iterator itLast)
-	//{
-	//	Internal::FillRange_imp(it, itLast, std::is_integral<typename Iterator::value_type>());
-	//}
-
-	//namespace Internal
-	//{
-	//	/* Fills the integral range value in an ascending order from zero while preventing
-	//	overflow by comparing the range value with the maximum value at each iteration.
-	//	Once the range value reached the maximum value, it goes back to zero. (inefficient) */
-	//	template <typename Iterator>
-	//	void FillRange_imp(Iterator it, Iterator itLast, std::true_type)
-	//	{
-	//		for (auto value = static_cast<typename Iterator::value_type>(0),
-	//			limit = std::numeric_limits<typename Iterator::value_type>::max();
-	//			it != itLast; ++it)
-	//		{
-	//			*it = value;
-	//			if (value == limit)
-	//				value = 0;
-	//			else
-	//				++value;
-	//		}
-	//	}
-
-	//	// Fills the floating point range value in an ascending order without the range
-	//	// check.
-	//	template <typename Iterator>
-	//	void FillRange_imp(Iterator it, Iterator itLast, std::false_type)
-	//	{
-	//		std::iota(it, itLast, static_cast<typename Iterator::value_type>(0));
-	//		//for (auto value = static_cast<typename Iterator::value_type>(0); it != itLast;
-	//		//	++it, ++value)
-	//		//	*it = value;
-	//	}
-	//}
-
 	// Copies periodically located data using step size (for both source and destination). 
 	/*	Incrementing iterators.
 	Iterators must NOT be be incremented for this function because it will go beyond range
