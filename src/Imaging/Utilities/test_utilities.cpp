@@ -134,6 +134,30 @@ void TestSafeOperations(void)
 	}
 }
 
+template <typename T>
+void TestAlgorithms_imp(void)
+{
+	std::vector<T> v1(10, static_cast<T>(1)), v2(10, static_cast<T>(2)), v3(10);
+	Utilities::AddRange(v1.cbegin(), v1.cend(), v2.cbegin(), v3.begin());
+	Utilities::SubtractRange(v2.cbegin(), v2.cend(), v1.cbegin(), v3.begin());
+	Utilities::MultiplyRange(v1.cbegin(), v1.cend(), v2.cbegin(), v3.begin());
+	Utilities::AddRange(v1.cbegin(), v1.cend(), v3.begin());
+	Utilities::SubtractRange(v1.cbegin(), v1.cend(), v3.begin());
+	Utilities::MultiplyRange(v1.cbegin(), v1.cend(), v3.begin());
+	Utilities::IncrementRange(v3.begin(), v3.end());
+	//Utilities::FillRange(v3.begin(), v3.end());
+}
+
+void TestAlgorithms(void)
+{
+	TestAlgorithms_imp<short>();
+	TestAlgorithms_imp<unsigned short>();
+	TestAlgorithms_imp<int>();
+	TestAlgorithms_imp<unsigned int>();
+	TestAlgorithms_imp<float>();
+	TestAlgorithms_imp<double>();
+}
+
 void TestContainers(void)
 {
 	std::array<int, 2> arrayI1 = { 1, 2 }, arrayI2{ 2, 3 }, arrayI3;
@@ -182,10 +206,17 @@ void TestContainers(void)
 	//arrayI3 = Utilities::Cast<int>(arrayD1);
 	Utilities::Cast(arrayD1, arrayI3);
 	std::vector<int> v1 = Utilities::GetRangeVector<int>(10);
+
+	std::vector<int> v2 = v1 + v1;
 }
 
 int main(void)
 {
+	//std::vector<int> c1(257);
+	//std::iota(c1.begin(), c1.end(), 0);
+	//std::vector<unsigned int> uc1(257);
+	//std::iota(uc1.begin(), uc1.end(), 0);
 	TestSafeOperations();
+	TestAlgorithms();
 	TestContainers();
 }

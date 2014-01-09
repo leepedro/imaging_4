@@ -11,6 +11,7 @@ Function templates can take container objects with different base data types.
 
 #include <array>
 #include <vector>
+#include <functional>
 
 #include "algorithms.h"
 
@@ -172,6 +173,23 @@ std::array<T, N> operator--(std::array<T, N> &lhs, int)
 	return temp;
 }
 
+// C = A + B using std::transform and lambda expression without AddRange() in algorithms.h.
+template <typename T>
+std::vector<T> operator+(const std::vector<T> &lhs, const std::vector<T> &rhs)
+{
+	if (lhs.size() != rhs.size())
+		throw std::runtime_error("The length of two input must be identical.");
+	std::vector<T> result;
+	result.reserve(lhs.size());
+	std::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), std::back_inserter(result),
+		[](T a, T b) { T c; Utilities::Add(a, b, c); return c; });
+	//std::vector<T> result(lhs.size());
+	//std::transform(lhs.cbegin(), lhs.cend(), rhs.cbegin(), result.begin(),
+	//	std::function<void(T, T, T&)>(Utilities::Add));
+	return result;
+}
+
+
 namespace Utilities
 {
 	// To be removed
@@ -227,11 +245,12 @@ namespace Utilities
 		dst = src;
 	}
 
+	// Similar to range() or arange() in Python.
 	template <typename T>
 	std::vector<T> GetRangeVector(std::size_t length)
 	{
 		std::vector<T> v(length);
-		FillRange(v.begin(), v.end());
+		std::iota(v.begin(), v.end(), 0);
 		return v;
 	}
 }
