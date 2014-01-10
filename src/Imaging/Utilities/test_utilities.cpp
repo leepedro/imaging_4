@@ -145,7 +145,6 @@ void TestAlgorithms_imp(void)
 	Utilities::SubtractRange(v1.cbegin(), v1.cend(), v3.begin());
 	Utilities::MultiplyRange(v1.cbegin(), v1.cend(), v3.begin());
 	Utilities::IncrementRange(v3.begin(), v3.end());
-	//Utilities::FillRange(v3.begin(), v3.end());
 }
 
 void TestAlgorithms(void)
@@ -212,10 +211,6 @@ void TestContainers(void)
 
 int main(void)
 {
-	//std::vector<int> c1(257);
-	//std::iota(c1.begin(), c1.end(), 0);
-	//std::vector<unsigned int> uc1(257);
-	//std::iota(uc1.begin(), uc1.end(), 0);
 	TestSafeOperations();
 	TestAlgorithms();
 	TestContainers();
