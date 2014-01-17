@@ -492,11 +492,23 @@ namespace Utilities
 				dst = static_cast<U>(src);
 		}
 
-		// integral to floating type; suppressing data loss warning if dst is float.
+		// integral to floating type; check data loss.
 		template <typename T, typename U>
-		void Cast_imp(T src, U &dst, std::true_type, std::false_type)
+		void Cast_imp(T src, float &dst, std::true_type, std::false_type)
 		{
-			dst = static_cast<U>(src);
+			if (Cast<int>(src) > 999999 || Cast<int>(src) < -999999)
+				std::runtime_error("Source value is beyond the precision limit of float.");
+			else
+				dst = static_cast<float>(src);
+		}
+
+		template <typename T, typename U>
+		void Cast_imp(T src, double &dst, std::true_type, std::false_type)
+		{
+			if (Cast<long long>(src) > 999999999999999 || Cast<long long>(src) < -999999999999999)
+				std::runtime_error("Source value is beyond the precision limit of double.");
+			else
+				dst = static_cast<double>(src);
 		}
 
 		// floating to floating; suppressing data loss warning if src is double and dst is
