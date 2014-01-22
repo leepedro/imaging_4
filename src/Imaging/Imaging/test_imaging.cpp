@@ -4,6 +4,8 @@
 #include "image.h"
 #include "opencv_interface.h"
 
+#include "buffer.h"
+
 template <typename T>
 void TestPoint2D_imp(void)
 {
@@ -149,10 +151,55 @@ void TestImageProcessing(void)
 	cv::waitKey(0);
 }
 
+void Pop(int id, Imaging::ImageBuffer &buffer, std::size_t count)
+{
+	for (auto n = 0; n != count; ++n)
+	{
+		Imaging::ImageFrame img = buffer.pop();	// Should be moved ?
+		std::cout << "Customer " << id << "(" << n << "): " <<
+			static_cast<unsigned int>(*img.Cbegin()) << std::endl;
+	}
+}
+
+void Push(int id, const Imaging::ImageFrame &imgSrc, Imaging::ImageBuffer &buffer,
+	std::size_t count)
+{
+	for (auto n = 0; n != count; ++n)
+	{
+		Imaging::ImageFrame img = imgSrc;	// Copied.
+		*img.Begin() = static_cast<Imaging::ImageFrame::ByteType>(n);
+		std::cout << "Supplier " << id << "(" << n << "): " <<
+			static_cast<unsigned int>(*img.Cbegin()) << std::endl;
+		buffer.push(std::move(img));
+	}
+}
+
+void TestBuffer(void)
+{
+	using namespace Imaging;
+
+	ImageBuffer buffer(20);
+	ImageFrame imgSrc;
+	imgSrc.Reset(DataType::UCHAR, { 512, 512 });
+
+	std::thread c1(Pop, 1, std::ref(buffer), 20);
+	std::thread c2(Pop, 2, std::ref(buffer), 20);
+	std::thread c3(Pop, 3, std::ref(buffer), 20);
+	std::thread p1(Push, 1, std::ref(imgSrc), std::ref(buffer), 30);
+	std::thread p2(Push, 2, std::ref(imgSrc), std::ref(buffer), 30);
+
+	c1.join();
+	c2.join();
+	c3.join();
+	p1.join();
+	p2.join();
+}
+
 int main(void)
 {
-	TestPoint2D();
-	TestROI();
-	TestImage();
-	TestImageProcessing();
+	//TestPoint2D();
+	//TestROI();
+	//TestImage();
+	//TestImageProcessing();
+	TestBuffer();
 }
