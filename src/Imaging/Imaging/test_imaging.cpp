@@ -6,6 +6,10 @@
 
 #include "buffer.h"
 
+std::chrono::seconds WAIT_TIME(3);
+
+std::mutex mutex_for_cout;
+
 template <typename T>
 void TestPoint2D_imp(void)
 {
@@ -152,12 +156,17 @@ void TestImageProcessing(void)
 }
 
 void Pop(int id, Imaging::ImageBuffer &buffer, std::size_t count)
-{
+{	
 	for (auto n = 0; n != count; ++n)
 	{
-		Imaging::ImageFrame img = buffer.pop();	// Should be moved ?
-		std::cout << "Customer " << id << "(" << n << "): " <<
-			static_cast<unsigned int>(*img.Cbegin()) << std::endl;
+		Imaging::ImageFrame img;
+		if (buffer.try_pop(img))	// Should be moved ?
+		{
+			std::lock_guard<std::mutex> lock(::mutex_for_cout);
+			std::cout << "Customer " << id << "(" << n << "): " <<
+				static_cast<unsigned int>(*img.Cbegin()) << std::endl;
+		}
+		// If failed to pop, give it up for this iteration.
 	}
 }
 
@@ -168,8 +177,11 @@ void Push(int id, const Imaging::ImageFrame &imgSrc, Imaging::ImageBuffer &buffe
 	{
 		Imaging::ImageFrame img = imgSrc;	// Copied.
 		*img.Begin() = static_cast<Imaging::ImageFrame::ByteType>(n);
-		std::cout << "Supplier " << id << "(" << n << "): " <<
-			static_cast<unsigned int>(*img.Cbegin()) << std::endl;
+		{
+			std::lock_guard<std::mutex> lock(::mutex_for_cout);
+			std::cout << "Supplier " << id << "(" << n << "): " <<
+				static_cast<unsigned int>(*img.Cbegin()) << std::endl;
+		}
 		buffer.push(std::move(img));
 	}
 }
@@ -184,7 +196,7 @@ void TestBuffer(void)
 
 	std::thread c1(Pop, 1, std::ref(buffer), 20);
 	std::thread c2(Pop, 2, std::ref(buffer), 20);
-	std::thread c3(Pop, 3, std::ref(buffer), 20);
+	std::thread c3(Pop, 3, std::ref(buffer), 21);
 	std::thread p1(Push, 1, std::ref(imgSrc), std::ref(buffer), 30);
 	std::thread p2(Push, 2, std::ref(imgSrc), std::ref(buffer), 30);
 
